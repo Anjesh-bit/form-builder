@@ -60,6 +60,22 @@ describe("validateLeafField", () => {
     );
   });
 
+  it.each(["0x10", "0b101", "0o17", "0X1F", "-0x10", "Infinity", "1_000"])(
+    "rejects the non-decimal literal %s",
+    (input) => {
+      expect(validateLeafField(numberField(), input)).toBe(
+        VALIDATION_MESSAGES.invalidNumber,
+      );
+    },
+  );
+
+  it.each(["42", "-1.5", "+3", ".5", "5.", "007", "1e3", "-2.5E-2"])(
+    "accepts the decimal literal %s",
+    (input) => {
+      expect(validateLeafField(numberField(), input)).toBeNull();
+    },
+  );
+
   it("enforces min and max", () => {
     const field = numberField({ min: 10, max: 20 });
 
@@ -157,6 +173,31 @@ describe("validateFormConfig", () => {
       g: VALIDATION_MESSAGES.groupNeedsValue,
     });
     expect(validateFormConfig(config, { a: "x" })).toEqual({});
+  });
+
+  it("treats a required group with no children as satisfied", () => {
+    const config: FormConfig = [
+      groupField({ id: "g", required: true, children: [] }),
+    ];
+
+    expect(validateFormConfig(config, {})).toEqual({});
+  });
+
+  it("does not let an empty nested group satisfy a required parent", () => {
+    const config: FormConfig = [
+      groupField({
+        id: "outer",
+        required: true,
+        children: [
+          groupField({ id: "inner", children: [] }),
+          textField({ id: "a" }),
+        ],
+      }),
+    ];
+
+    expect(validateFormConfig(config, {})).toEqual({
+      outer: VALIDATION_MESSAGES.groupNeedsValue,
+    });
   });
 
   it("returns no errors for a valid form", () => {

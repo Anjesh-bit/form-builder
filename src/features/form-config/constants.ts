@@ -24,6 +24,7 @@ export const IMPORT_ERROR_MESSAGES = {
     `${path}.type must be "text", "number", or "group".`,
   emptyLabel: (path: string) => `${path}.label must be a non-empty string.`,
   mustBeNumber: (path: string) => `${path} must be a number.`,
+  mustBeBoolean: (path: string) => `${path} must be true or false.`,
   minExceedsMax: (path: string) =>
     `${path}.min must not be greater than ${path}.max.`,
   childrenMustBeArray: (path: string) => `${path}.children must be an array.`,

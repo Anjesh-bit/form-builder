@@ -29,10 +29,21 @@ const addFieldToGroup = (
   const isTargetGroup = group.id === parentId;
   const children = isTargetGroup
     ? [...group.children, newField]
-    : addField(group.children, parentId, newField);
+    : insertField(group.children, parentId, newField);
 
   return { ...group, children };
 };
+
+const insertField = (
+  fields: FormConfig,
+  parentId: string,
+  newField: FormField,
+): FormConfig =>
+  fields.map((field) =>
+    field.type === FieldType.Group
+      ? addFieldToGroup(field, parentId, newField)
+      : field,
+  );
 
 export const collectFieldIds = (fields: FormConfig): string[] => {
   const ids: string[] = [];
@@ -54,38 +65,63 @@ export const addField = (
 ): FormConfig => {
   if (parentId === null) return [...fields, newField];
 
-  return fields.map((field) =>
-    field.type === FieldType.Group
-      ? addFieldToGroup(field, parentId, newField)
-      : field,
-  );
+  const parentType = findField(fields, parentId)?.type;
+  const isParentGroup = parentType === FieldType.Group;
+
+  if (!isParentGroup)
+    throw new Error(`Cannot add field: no group with id "${parentId}".`);
+
+  return insertField(fields, parentId, newField);
 };
 
-export const removeField = (fields: FormConfig, fieldId: string): FormConfig =>
-  fields
+const reuseIfUnchanged = (
+  original: FormConfig,
+  next: FormConfig,
+): FormConfig => {
+  const isUnchanged =
+    original.length === next.length &&
+    original.every((field, index) => field === next[index]);
+
+  return isUnchanged ? original : next;
+};
+
+const withChildren = (group: GroupField, children: FormConfig): GroupField =>
+  children === group.children ? group : { ...group, children };
+
+export const removeField = (
+  fields: FormConfig,
+  fieldId: string,
+): FormConfig => {
+  const nextFields = fields
     .filter(({ id }) => id !== fieldId)
     .map((field) =>
       field.type === FieldType.Group
-        ? { ...field, children: removeField(field.children, fieldId) }
+        ? withChildren(field, removeField(field.children, fieldId))
         : field,
     );
+
+  return reuseIfUnchanged(fields, nextFields);
+};
 
 const transformField = (
   fields: FormConfig,
   fieldId: string,
   transform: (field: FormField) => FormField,
-): FormConfig =>
-  fields.map((field) => {
+): FormConfig => {
+  const nextFields = fields.map((field) => {
     if (field.id === fieldId) return transform(field);
 
     if (field.type === FieldType.Group)
-      return {
-        ...field,
-        children: transformField(field.children, fieldId, transform),
-      };
+      return withChildren(
+        field,
+        transformField(field.children, fieldId, transform),
+      );
 
     return field;
   });
+
+  return reuseIfUnchanged(fields, nextFields);
+};
 
 export const updateField = (
   fields: FormConfig,

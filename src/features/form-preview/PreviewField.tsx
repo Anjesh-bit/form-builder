@@ -62,6 +62,7 @@ export const PreviewField: FC<PreviewFieldProps> = ({ field, formState }) => {
       </label>
       <input
         id={id}
+        inputMode={field.type === FieldType.Number ? "decimal" : undefined}
         aria-invalid={hasError}
         aria-describedby={describedBy}
         value={values[id] ?? ""}

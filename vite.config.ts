@@ -1,7 +1,10 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
-const DOM_TEST_GLOB = "src/features/form-preview/**/*.test.ts";
+const DOM_TEST_GLOBS = [
+  "src/**/*.test.tsx",
+  "src/features/form-preview/**/*.test.ts",
+];
 
 export default defineConfig({
   plugins: [react()],
@@ -13,7 +16,7 @@ export default defineConfig({
           name: "logic",
           environment: "node",
           include: ["src/**/*.test.ts"],
-          exclude: [DOM_TEST_GLOB],
+          exclude: DOM_TEST_GLOBS,
         },
       },
       {
@@ -21,7 +24,7 @@ export default defineConfig({
         test: {
           name: "dom",
           environment: "jsdom",
-          include: [DOM_TEST_GLOB],
+          include: DOM_TEST_GLOBS,
         },
       },
     ],

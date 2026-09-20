@@ -27,6 +27,14 @@ describe("importConfig", () => {
     });
   });
 
+  it("accepts an explicit required: false", () => {
+    const [field] = importConfig(
+      '[{ "type": "text", "label": "n", "required": false }]',
+    );
+
+    expect(field.required).toBe(false);
+  });
+
   it("accepts a bare array", () => {
     const config = importConfig(
       JSON.stringify([{ type: "text", label: "Name", required: true }]),
@@ -101,6 +109,21 @@ describe("importConfig", () => {
       "a non-numeric min",
       '[{ "type": "number", "label": "n", "min": "1" }]',
       IMPORT_ERROR_MESSAGES.mustBeNumber("fields[0].min"),
+    ],
+    [
+      "a string required flag",
+      '[{ "type": "text", "label": "n", "required": "yes" }]',
+      IMPORT_ERROR_MESSAGES.mustBeBoolean("fields[0].required"),
+    ],
+    [
+      "a null required flag",
+      '[{ "type": "number", "label": "n", "required": null }]',
+      IMPORT_ERROR_MESSAGES.mustBeBoolean("fields[0].required"),
+    ],
+    [
+      "a non-boolean required flag on a nested field, with its path",
+      '[{ "type": "group", "label": "g", "children": [{ "type": "text", "label": "t", "required": 1 }] }]',
+      IMPORT_ERROR_MESSAGES.mustBeBoolean("fields[0].children[0].required"),
     ],
     [
       "a min greater than max",

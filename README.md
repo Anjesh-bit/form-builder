@@ -106,4 +106,8 @@ These are the choices worth knowing about, each with the reason behind it.
 - A number field must contain an actual number and stay inside its `min` and
   `max`. A limit of `0` is a real limit, not "no limit".
 - A required group is happy as soon as at least one field inside it, at any
-  depth, has a value.
+  depth, has a value. A group with no fields has nothing to fill in, so it is
+  always fine.
+- Number fields only accept plain decimals like `42`, `-1.5` or `1e3`. Forms
+  like `0x10` are rejected.
+- On import, `required` must be `true` or `false` if it is present.

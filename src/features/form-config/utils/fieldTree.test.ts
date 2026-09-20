@@ -92,6 +92,30 @@ describe("addField", () => {
 
     expect(config[0].children).toHaveLength(0);
   });
+
+  it("throws when parentId matches no field", () => {
+    const config = [groupField("g", [groupField("inner", [])])];
+
+    expect(() => addField(config, "missing", textField("x"))).toThrow(
+      'Cannot add field: no group with id "missing".',
+    );
+  });
+
+  it("throws when parentId matches a non-group field", () => {
+    expect(() => addField([textField("a")], "a", textField("x"))).toThrow(
+      'Cannot add field: no group with id "a".',
+    );
+  });
+
+  it("does not throw for a nested group next to non-matching branches", () => {
+    const config = [
+      groupField("other", [groupField("deep", [])]),
+      groupField("target", []),
+    ];
+
+    expect(() => addField(config, "target", textField("x"))).not.toThrow();
+    expect(() => addField(config, "deep", textField("y"))).not.toThrow();
+  });
 });
 
 describe("removeField", () => {
@@ -113,6 +137,32 @@ describe("removeField", () => {
 
     expect(result).toEqual([]);
   });
+
+  it("keeps untouched sibling groups by reference", () => {
+    const before = [
+      groupField("g1", [textField("x")]),
+      groupField("g2", [textField("y")]),
+    ];
+
+    const after = removeField(before, "x");
+
+    expect(after[1]).toBe(before[1]);
+    expect(after[0]).not.toBe(before[0]);
+  });
+
+  it("keeps a group by reference when a top-level sibling is removed", () => {
+    const before = [textField("a"), groupField("g", [textField("b")])];
+
+    const after = removeField(before, "a");
+
+    expect(after[0]).toBe(before[1]);
+  });
+
+  it("returns the same array when nothing matches", () => {
+    const before = [textField("a"), groupField("g", [textField("b")])];
+
+    expect(removeField(before, "missing")).toBe(before);
+  });
 });
 
 describe("updateField", () => {
@@ -132,6 +182,34 @@ describe("updateField", () => {
     });
 
     expect(findField(result, "a")?.label).toBe("Nested");
+  });
+
+  it("keeps untouched sibling groups by reference", () => {
+    const before = [textField("a"), groupField("g", [textField("b")])];
+
+    const after = updateField(before, "a", { label: "Renamed" });
+
+    expect(after[1]).toBe(before[1]);
+  });
+
+  it("rebuilds only the path to a nested change", () => {
+    const untouched = textField("c");
+    const before = [
+      groupField("g", [textField("b"), untouched]),
+      groupField("h", [textField("d")]),
+    ];
+
+    const after = updateField(before, "b", { label: "Renamed" });
+
+    expect(after[0]).not.toBe(before[0]);
+    expect(after[1]).toBe(before[1]);
+    expect(findField(after, "c")).toBe(untouched);
+  });
+
+  it("returns the same array when nothing matches", () => {
+    const before = [textField("a"), groupField("g", [textField("b")])];
+
+    expect(updateField(before, "missing", { label: "x" })).toBe(before);
   });
 });
 
@@ -189,6 +267,20 @@ describe("updateNumberRange", () => {
     );
 
     expect(findField(result, "n")).toMatchObject({ min: 5 });
+  });
+
+  it("keeps untouched sibling groups by reference", () => {
+    const before = [numberField("n"), groupField("g", [textField("b")])];
+
+    const after = updateNumberRange(before, "n", { min: 1 });
+
+    expect(after[1]).toBe(before[1]);
+  });
+
+  it("returns the same array when the target is not a number field", () => {
+    const before = [textField("t"), groupField("g", [textField("b")])];
+
+    expect(updateNumberRange(before, "t", { min: 1 })).toBe(before);
   });
 });
 

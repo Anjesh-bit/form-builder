@@ -46,6 +46,15 @@ const readOptionalNumber = (
   throw new ConfigImportError(IMPORT_ERROR_MESSAGES.mustBeNumber(path));
 };
 
+const readOptionalBoolean = (
+  value: MaybeJsonValue,
+  path: string,
+): boolean | undefined => {
+  if (value === undefined || typeof value === "boolean") return value;
+
+  throw new ConfigImportError(IMPORT_ERROR_MESSAGES.mustBeBoolean(path));
+};
+
 const parseNumberField = (
   rawField: JsonObject,
   base: BaseProperties,
@@ -92,7 +101,8 @@ const parseField = (rawField: MaybeJsonValue, path: string): FormField => {
   const base = {
     id: generateFieldId(type),
     label,
-    required: rawField.required === true,
+    required:
+      readOptionalBoolean(rawField.required, `${path}.required`) ?? false,
   };
 
   switch (type) {

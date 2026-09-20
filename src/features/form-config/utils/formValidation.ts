@@ -34,13 +34,16 @@ const validateNumberRange = (
   return null;
 };
 
+const DECIMAL_LITERAL = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
 const validateNumberValue = (
   field: NumberField,
   value: string,
 ): string | null => {
   const numericValue = Number(value);
+  const isDecimal = DECIMAL_LITERAL.test(value);
 
-  return Number.isFinite(numericValue)
+  return isDecimal && Number.isFinite(numericValue)
     ? validateNumberRange(field, numericValue)
     : VALIDATION_MESSAGES.invalidNumber;
 };
@@ -63,7 +66,9 @@ const validateGroupField = (
   group: GroupField,
   values: FormValues,
 ): string | null => {
-  const isMissingValue = group.required && !groupHasValue(group, values);
+  const hasChildren = group.children.length > 0;
+  const isMissingValue =
+    group.required && hasChildren && !groupHasValue(group, values);
 
   return isMissingValue ? VALIDATION_MESSAGES.groupNeedsValue : null;
 };
