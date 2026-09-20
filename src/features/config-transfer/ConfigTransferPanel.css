@@ -1,0 +1,14 @@
+.config-transfer__textarea {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 16px;
+  resize: vertical;
+}
+
+.config-transfer__actions {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0;
+}
