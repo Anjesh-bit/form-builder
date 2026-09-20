@@ -1,0 +1,41 @@
+.preview-field {
+  margin-bottom: 18px;
+}
+
+.preview-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.preview-field input {
+  width: 100%;
+}
+
+.field-hint {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.preview-group {
+  margin: 0 0 20px;
+  padding: 8px 18px 6px;
+  background: var(--bg);
+}
+
+.preview-group legend {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-text);
+  padding: 0 8px;
+}
+
+.form-preview__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
