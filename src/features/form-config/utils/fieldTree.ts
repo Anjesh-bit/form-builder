@@ -68,13 +68,13 @@ export const addField = (
 ): FormConfig => {
   if (parentId === null) return [...fields, newField];
 
-  const parentType = findField(fields, parentId)?.type;
-  const isParentGroup = parentType === FieldType.Group;
+  const nextFields = insertField(fields, parentId, newField);
+  const isParentFound = nextFields !== fields;
 
-  if (!isParentGroup)
+  if (!isParentFound)
     throw new Error(`Cannot add field: no group with id "${parentId}".`);
 
-  return insertField(fields, parentId, newField);
+  return nextFields;
 };
 
 const reuseIfUnchanged = (
