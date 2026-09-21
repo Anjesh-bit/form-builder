@@ -31,19 +31,22 @@ const addFieldToGroup = (
     ? [...group.children, newField]
     : insertField(group.children, parentId, newField);
 
-  return { ...group, children };
+  return withChildren(group, children);
 };
 
 const insertField = (
   fields: FormConfig,
   parentId: string,
   newField: FormField,
-): FormConfig =>
-  fields.map((field) =>
+): FormConfig => {
+  const nextFields = fields.map((field) =>
     field.type === FieldType.Group
       ? addFieldToGroup(field, parentId, newField)
       : field,
   );
+
+  return reuseIfUnchanged(fields, nextFields);
+};
 
 export const collectFieldIds = (fields: FormConfig): string[] => {
   const ids: string[] = [];
@@ -171,9 +174,11 @@ export const moveField = (
   if (isFieldAtThisLevel)
     return swapWithNeighbor(fields, fieldIndex, direction);
 
-  return fields.map((field) =>
+  const nextFields = fields.map((field) =>
     field.type === FieldType.Group
-      ? { ...field, children: moveField(field.children, fieldId, direction) }
+      ? withChildren(field, moveField(field.children, fieldId, direction))
       : field,
   );
+
+  return reuseIfUnchanged(fields, nextFields);
 };

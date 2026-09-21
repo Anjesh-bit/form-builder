@@ -116,6 +116,31 @@ describe("addField", () => {
     expect(() => addField(config, "target", textField("x"))).not.toThrow();
     expect(() => addField(config, "deep", textField("y"))).not.toThrow();
   });
+
+  it("keeps untouched sibling groups by reference", () => {
+    const before = [
+      groupField("target", []),
+      groupField("other", [textField("x")]),
+    ];
+
+    const after = addField(before, "target", textField("new"));
+
+    expect(after[1]).toBe(before[1]);
+    expect(after[0]).not.toBe(before[0]);
+  });
+
+  it("rebuilds only the path to the target group", () => {
+    const untouched = textField("keep");
+    const before = [
+      groupField("outer", [groupField("inner", []), untouched]),
+      groupField("sibling", []),
+    ];
+
+    const after = addField(before, "inner", textField("new"));
+
+    expect(after[1]).toBe(before[1]);
+    expect(findField(after, "keep")).toBe(untouched);
+  });
 });
 
 describe("removeField", () => {
@@ -325,5 +350,28 @@ describe("moveField", () => {
       "y",
       "x",
     ]);
+  });
+
+  it("keeps untouched sibling groups by reference", () => {
+    const before = [
+      groupField("g", [textField("x"), textField("y")]),
+      groupField("other", [textField("z")]),
+    ];
+
+    const after = moveField(before, "y", MoveDirection.Up);
+
+    expect(after[1]).toBe(before[1]);
+  });
+
+  it("returns the same array when a nested move hits a boundary", () => {
+    const before = [groupField("g", [textField("x"), textField("y")])];
+
+    expect(moveField(before, "x", MoveDirection.Up)).toBe(before);
+  });
+
+  it("returns the same array when nothing matches", () => {
+    const before = [textField("a"), groupField("g", [textField("b")])];
+
+    expect(moveField(before, "missing", MoveDirection.Up)).toBe(before);
   });
 });
