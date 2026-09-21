@@ -18,7 +18,10 @@ const serializeField = (field: FormField): SerializedField => {
     return { ...commonProperties, min: field.min, max: field.max };
 
   if (field.type === FieldType.Group)
-    return { ...commonProperties, children: field.children.map(serializeField) };
+    return {
+      ...commonProperties,
+      children: field.children.map(serializeField),
+    };
 
   return commonProperties;
 };

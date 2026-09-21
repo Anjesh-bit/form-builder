@@ -77,7 +77,9 @@ const parseGroupField = (
   const rawChildren = rawField.children ?? [];
 
   if (!Array.isArray(rawChildren))
-    throw new ConfigImportError(IMPORT_ERROR_MESSAGES.childrenMustBeArray(path));
+    throw new ConfigImportError(
+      IMPORT_ERROR_MESSAGES.childrenMustBeArray(path),
+    );
 
   const children = rawChildren.map((rawChild, index) =>
     parseField(rawChild, `${path}.children[${index}]`),
